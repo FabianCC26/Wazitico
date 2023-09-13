@@ -8,8 +8,21 @@
 (require "../graphManagement/graphCreator.rkt")
 (require "../graphManagement/pathFinder.rkt")
 
-(provide run
-         logo_path)
+(provide run)
+
+
+; Create some data structures that will be use then
+(define coords-list '())
+(define edges-list '())
+(define graph '())
+(define weight "      ")
+
+
+; Define graphically the types of edges that will be used in the graphs 
+(define oneWay (make-object pen% "GAINSBORO" 4 'solid))
+(define twoWay (make-object pen% "DIM GRAY" 4 'solid))
+(define blackPen (make-object pen% "BLACK" 2 'solid))
+(define whitePen (make-object pen% "SNOW" 1 'solid))
 
 ; Create the bitmap with the lenght given
 (define bitmap-blank
@@ -34,35 +47,6 @@
                    (send dc draw-bitmap bmp 0 0)
                    (or (send dc get-bitmap) (bitmap-blank)))])]))
 
-; Create the bitmaps with the given images
-(define logo (make-object bitmap% "../../assets/logo.png"))
-(define logou (make-object bitmap% "../../assets/logounder.png"))
-
-; Create the images by concatenating them with the directions
-(define (logo_path path)
-  (set! logo (make-object bitmap% (string-append path "logo.png")))
-  (set! logou (make-object bitmap% (string-append path "logounder.png")))
-  )
-
-; Create some data structures that will be use then
-(define coords-list '())
-(define edges-list '())
-(define graph '())
-(define weight "      ")
-
-
-; Define graphically the types of edges that will be used in the graphs 
-(define oneWay (make-object pen% "GAINSBORO" 4 'solid))
-(define twoWay (make-object pen% "DIM GRAY" 4 'solid))
-(define blackPen (make-object pen% "BLACK" 2 'solid))
-(define whitePen (make-object pen% "SNOW" 1 'solid))
-
-
-; Define the fill color of the shapes
-(define lightblue-brush (make-object brush% "LIGHTBLUE" 'solid))
-
-
-
 
 ; Define the main frame for Wazitico
 (define mainFrame (new frame% [label "Wazitico"]
@@ -70,18 +54,52 @@
                    [height 300]
                    [style '(no-resize-border)]))
 
+(define mainPanel (new vertical-panel% [parent mainFrame]
+                                         [alignment '(center center)]
+                                         [spacing 15])) 
 
-; Create the button to start
-(new button% [parent mainFrame]
-             [label "Start"]
+
+
+; Create a welcome label
+(define welcome-label (new message% [parent mainPanel]
+                                  [label "¡Bienvenido a Wazitico!"]
+                                  [font (make-font #:size 16)]
+                                  ))
+
+
+; Creates buttons for selecting language
+(new button% [parent mainPanel]
+             [label "Español"]
+             [min-width 100] 
+             [min-height 60] 
+             [vert-margin 10]
+             [horiz-margin 5]
+             [font (make-font #:size 14)]
+             [callback (lambda (button event)
+                         (send mainFrame show #f)
+                         (send cityFrame show #t))])
+
+
+; Create a welcome label
+(define welcome-labelen (new message% [parent mainPanel]
+                                  [label "¡Welcome to Wazitico!"]
+                                  [font (make-font #:size 16)]
+                                  ))
+
+(new button% [parent mainPanel]
+             [label "English"]
+             [min-width 100] 
+             [min-height 60] 
+             [vert-margin 10]
+             [horiz-margin 5]
+             [font (make-font #:size 14)]
              [callback (lambda (button event)
                          (send mainFrame show #f)
                          (send cityFrame show #t))])
 
 
 
-
-; Create the botton to add a new city
+; Create the main interactive frame
 (define cityFrame (new frame% [label "Wazitico"]
                    [width 800]
                    [height 600]
@@ -117,6 +135,7 @@
 ; Create values for the lenght of the buttons
 (define button-width 100) 
 (define button-height 40) 
+
 
 ; Create the button to add city, which is located in ButtonPanel
 (define addCityButton (new button% [parent ButtonPanel]
@@ -191,6 +210,7 @@
 (define text-field-max-width 150)
 
 
+; Create "New City" popup window
 (define addCityFrame (new frame% [label "New City"]
                    [width popup-window-width]
                    [height popup-window-height]
@@ -198,11 +218,13 @@
                    [style '(no-resize-border)]))
 
 
+; Create vertical panel for "New City" popup
 (define verticalCityPanel (new vertical-panel% [parent addCityFrame]
                      [alignment '(center center)]
                      [spacing 10]))
 
 
+; Create text fields for adding a new city
 (define addCityText ( new text-field% [parent verticalCityPanel]
                                     [label "City Name:   "]
                                     [min-width 5]
@@ -219,7 +241,7 @@
                                     [label "Longitude:   "]
                                     [min-width 5] ))
 
-
+; Create "Add" button for adding a new city
 (define add-city-window-button (new button% [parent verticalCityPanel]
              [label "Add"]
              [callback (lambda (button event)
@@ -235,21 +257,20 @@
 
 
 
-
-
-
+; Create "New Road" popup window
 (define roadFrame (new frame% [label "New Route"]
                    [width popup-window-width]
                    [height popup-window-height]
                    [alignment '(center center)]
                    [style '(no-resize-border)]))
 
-
+; Create vertical panel for "New Road" popup
 (define verticalPanelRoute (new vertical-panel% [parent roadFrame]
                      [alignment '(center center)]
                      [spacing 10]))
 
 
+; Create text fields for adding a new road
 (define roadInitialText (new text-field% [parent verticalPanelRoute]
                                     [label "    Origin:        "]
                                     [min-width 10]
@@ -266,12 +287,13 @@
                                     [label "Distance(km):"]
                                     [min-width 10]
                                     ))
-
+; Create check-box for specifying road type
 (define wayCheck (new check-box%  
       [label "One way road"]  
       [parent verticalPanelRoute]))
 
 
+; Create "Ok" button for adding a new road
 (define add-road-window-button (new button% [parent verticalPanelRoute]
              [label "Ok"]
              [callback (lambda (button event)
@@ -287,11 +309,13 @@
 
 
 
+; Function to draw an edge on the canvas
 (define (draw-edge initialNode finalNode weight isDirected?)
   (draw-line dc initialNode finalNode isDirected?)                                              
   (number-draw weight initialNode finalNode)
   )
 
+; Function to draw all nodes on the canvas
 (define (draw-all-edges edges-list)
   (cond ((not(null? edges-list))
          (draw-edge (caar edges-list) (cadar edges-list) (caddar edges-list) (cadr(cddar edges-list)))
@@ -300,15 +324,13 @@
 
 
 
-
-
-
-
+; Function to draw all nodes on the canvas
 (define (draw-all-nodes)
   (draw-all-nodes-aux coords-list)
   )
 
 
+; Auxiliary function to draw all nodes
 (define (draw-all-nodes-aux list)
   (cond ( (null? (cdr list) )
               (draw-node (caar list) (string->number (cadar list)) (string->number (caddar list)) )
@@ -319,7 +341,7 @@
          )))
 
 
-
+; Function to draw a single node on the canvas
 (define (draw-node node x y)
   (define radius 30) 
   (send dc set-brush (make-object brush% "MAGENTA" 'solid))
@@ -330,13 +352,7 @@
   (send dc draw-text node (- x 40) (- y 55))) 
 
 
-
-
-
-
-
-
-
+; Function to draw a line (edge) between two nodes
 (define (draw-line dc origin destiny way)
   (cond ((equal? way #t) ; Una vía
          (send dc set-pen (make-object pen% "GAINSBORO" 6 'solid))) 
@@ -348,6 +364,7 @@
         (getCoords destiny "x") (getCoords destiny "y")))
 
 
+; Function to draw distance number on an edge
 (define (number-draw weight origin destiny)
   (define x (/ (+ (getCoords origin "x") (getCoords destiny "x")) 2))
   (define y (/ (+ (getCoords origin "y") (getCoords destiny "y")) 2))
@@ -356,12 +373,12 @@
   
 
 
-
+; Function to get coordinates of a node
 (define (getCoords nodo pos)
   (getCoordsAux nodo pos coords-list)
     )
 
-
+; Auxiliary function to get coordinates of a node
 (define (getCoordsAux nodo pos list)
   (cond( (null? list)
          -1)
@@ -382,6 +399,7 @@
    )
 )
 
+; Function to get coordinates of nodes in a path
 (define (getPathCoords path)
   (cond ((null? path)
          '())
@@ -392,29 +410,31 @@
 
 
 
-
+; Create the "Find Route" frame
 (define tripFrame (new frame% [label "Find Route"]
                    [width popup-window-width]
                    [height popup-window-height]
                    [alignment '(center center)]
                    [style '(no-resize-border)]))
 
+
+; Create vertical panel for "Find Route" frame
 (define verticalPanelTrip (new vertical-panel% [parent tripFrame]
                      [alignment '(center center)]
                      [spacing 10]))
 
+; Create text fields for specifying the route
 (define routeOrigin_entry ( new text-field% [parent verticalPanelTrip]
                                     [label "Origin:          "]
                                     [min-width 5]
                                     ))
-
 
 (define routeDestination_entry ( new text-field% [parent verticalPanelTrip]
                                     [label "Destination: "]
                                     [min-width 5]
                                     ))
 
-
+; Create "Ok" button for finding a route
 (new button% [parent verticalPanelTrip]
              [label "Ok"]
              [callback (lambda (button event)
@@ -432,6 +452,7 @@
                          (send tripFrame show #f)
                          )])
 
+; Function to find the minimum weighted path
 (define (min paths pivot weight)
   (cond((null? paths)
         pivot)
@@ -442,19 +463,20 @@
                (min (cdr paths) pivot weight))))))
 
 
-
+; Function to draw a specific path in a given color
 (define (draw_path_aux path color)
   (set_pen color 5 dc)
   (draw_path (getPathCoords path) dc)
   )
 
+; Function to draw all paths in the given list
 (define (draw_all_paths paths)
   (cond ((not(null? paths))
          (draw_path_aux (car paths) "blue")
          (draw_all_paths (cdr paths)))))
          
 
-
+; Function to run the GUI application
 (define (run)
   (sleep/yield 1)
   (send mainFrame show #t))
