@@ -474,7 +474,7 @@
 
 ; Create "Ok" button for finding a route
 (new button% [parent verticalPanelTrip]
-             [label "Ok"]
+             [label "Buscar ruta"]
              [callback (lambda (button event)
                          (define paths (find_all_paths (send routeOrigin_entry get-value)
                                                        (send routeDestination_entry get-value)
