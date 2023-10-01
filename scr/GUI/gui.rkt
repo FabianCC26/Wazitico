@@ -23,6 +23,7 @@
 (define twoWay (make-object pen% "DIM GRAY" 4 'solid))
 (define blackPen (make-object pen% "BLACK" 2 'solid))
 (define whitePen (make-object pen% "SNOW" 1 'solid))
+(define GreenPen (make-object pen% "LIGHT BLUE" 2 'solid))
 
 ; Create the bitmap with the lenght given
 (define bitmap-blank
@@ -69,7 +70,7 @@
 
 ; Creates buttons for selecting language
 (new button% [parent mainPanel]
-             [label "Español"]
+             [label "Iniciar"]
              [min-width 100] 
              [min-height 60] 
              [vert-margin 10]
@@ -78,25 +79,6 @@
              [callback (lambda (button event)
                          (send mainFrame show #f)
                          (send cityFrame show #t))])
-
-
-; Create a welcome label
-(define welcome-labelen (new message% [parent mainPanel]
-                                  [label "¡Welcome to Wazitico!"]
-                                  [font (make-font #:size 16)]
-                                  ))
-
-(new button% [parent mainPanel]
-             [label "English"]
-             [min-width 100] 
-             [min-height 60] 
-             [vert-margin 10]
-             [horiz-margin 5]
-             [font (make-font #:size 14)]
-             [callback (lambda (button event)
-                         (send mainFrame show #f)
-                         (send cityFrame show #t))])
-
 
 
 ; Create the main interactive frame
@@ -119,11 +101,40 @@
                        [style '(border)]
                        [vert-margin 10]  
                        [horiz-margin 10]
-                       [min-height 500]
-                       [min-width 870]                       
+                       [min-height 600]
+                       [min-width 900]                       
                        ))
 ; Create an object to draw in the new canvas
 (define dc (send map-canvas get-dc))
+
+; Create a grid in the canvas
+(define (draw-grid-in-canvas canvas cell-width cell-height)
+  (define dc (send canvas get-dc))
+  (send dc set-pen GreenPen) ; Puedes ajustar el color y estilo de la cuadrícula según tus preferencias
+  
+
+  (define canvas-width (send canvas get-width))
+  (define canvas-height (send canvas get-height))
+
+
+  (define (draw-horizontal-lines y)
+    (send dc draw-line 0 y canvas-width y)
+    (send dc set-font (make-font #:size 10)) 
+    (send dc draw-text (format "~a" y) 5 (- y 20))) 
+
+ 
+  (define (draw-vertical-lines x)
+    (send dc draw-line x 0 x canvas-height)
+    (send dc set-font (make-font #:size 10)) 
+    (send dc draw-text (format "~a" x) (+ x 5) 5))
+
+  
+  (for ([y (in-range 0 canvas-height cell-height)])
+    (draw-horizontal-lines y))
+
+  
+  (for ([x (in-range 0 canvas-width cell-width)])
+    (draw-vertical-lines x)))
 
 
 ; Create another vertical panel in cityPanel
@@ -132,6 +143,14 @@
                                          [min-width 130]
                                          [spacing 30])) 
 
+; Checks if the node list is empty
+(define (check-nodes-list)
+  (cond
+    [(empty? coords-list)
+     ]
+    [else
+     (draw-all-nodes)]))
+
 ; Create values for the lenght of the buttons
 (define button-width 100) 
 (define button-height 40) 
@@ -139,18 +158,20 @@
 
 ; Create the button to add city, which is located in ButtonPanel
 (define addCityButton (new button% [parent ButtonPanel]
-             [label "New City"]
+             [label "Nueva Ciudad"]
              [min-width button-width]
              [min-height button-height]
              [vert-margin 10]  
              [horiz-margin 5]
              [callback (lambda (button event)
                          (send addCityFrame show #t)
+                         (draw-grid-in-canvas map-canvas 100 100)
+                         (check-nodes-list)
                          )]))
 
 ; Create the button to add roads, which is located in ButtonPanel
 (define addRoadButton (new button% [parent ButtonPanel]
-             [label "New Road"]
+             [label "Nueva Carretera"]
              [min-width button-width]
              [min-height button-height]
              [vert-margin 10]  
@@ -161,7 +182,7 @@
 
 ; Create the button to check routes, which is located in ButtonPanel
 (define selectRouteButton (new button% [parent ButtonPanel]
-             [label "Find Route"]
+             [label "Encontrar Ruta"]
              [min-width button-width]
              [min-height button-height]
              [vert-margin 10]  
@@ -174,7 +195,7 @@
 
 ; Create the button to clear nodes, which is located in ButtonPanel
 (define clearNodesButton (new button% [parent ButtonPanel]
-             [label "Clear Map"]
+             [label "Limpiar Mapa"]
              [min-width button-width]
              [min-height button-height]
              [vert-margin 10]  
@@ -201,7 +222,7 @@
 ; Create a label in InformationPanel to display the shortest path
 (define weightLabel (new message% [parent InformationPanel]
                           [font (make-font #:size 10)]
-                          [label (string-append "Shortest Distance:\n" "\n" weight)]))
+                          [label (string-append "Distancia mas corta:\n" "\n" weight)]))
 
 
 ; Create the lenghts for the secondary frames
@@ -209,9 +230,8 @@
 (define popup-window-height 200)
 (define text-field-max-width 150)
 
-
 ; Create "New City" popup window
-(define addCityFrame (new frame% [label "New City"]
+(define addCityFrame (new frame% [label "Nueva Ciudad"]
                    [width popup-window-width]
                    [height popup-window-height]
                    [alignment '(center center)]
@@ -226,24 +246,24 @@
 
 ; Create text fields for adding a new city
 (define addCityText ( new text-field% [parent verticalCityPanel]
-                                    [label "City Name:   "]
+                                    [label "Nombre de la ciudad:   "]
                                     [min-width 5]
                                     ))
 
 
 (define addXText ( new text-field% [parent verticalCityPanel]
-                                    [label "Latitude:       "]
+                                    [label "     Longitud:                   "]
                                     [min-width 5] ))
 
 
 
 (define addYText ( new text-field% [parent verticalCityPanel]
-                                    [label "Longitude:   "]
+                                    [label "      Latitud:                      "]
                                     [min-width 5] ))
 
 ; Create "Add" button for adding a new city
 (define add-city-window-button (new button% [parent verticalCityPanel]
-             [label "Add"]
+             [label "Añadir"]
              [callback (lambda (button event)
                          (define nodeName (send addCityText get-value))
                          (define xCoord (send addXText get-value))
@@ -258,7 +278,7 @@
 
 
 ; Create "New Road" popup window
-(define roadFrame (new frame% [label "New Route"]
+(define roadFrame (new frame% [label "Nueva ruta"]
                    [width popup-window-width]
                    [height popup-window-height]
                    [alignment '(center center)]
@@ -272,41 +292,57 @@
 
 ; Create text fields for adding a new road
 (define roadInitialText (new text-field% [parent verticalPanelRoute]
-                                    [label "    Origin:        "]
+                                    [label "    Origen:          "]
                                     [min-width 10]
                                     ))
 
 
 (define roadFinalText ( new text-field% [parent verticalPanelRoute]
-                                    [label "    Destiny:      "]
+                                    [label "    Destino:        "]
                                     [min-width 10]
                                     ))
 
 
 (define roadText (new text-field% [parent verticalPanelRoute]
-                                    [label "Distance(km):"]
+                                    [label "Distancia(km): "]
                                     [min-width 10]
                                     ))
 ; Create check-box for specifying road type
 (define wayCheck (new check-box%  
-      [label "One way road"]  
+      [label "Unidireccional"]  
       [parent verticalPanelRoute]))
 
 
-; Create "Ok" button for adding a new road
-(define add-road-window-button (new button% [parent verticalPanelRoute]
-             [label "Ok"]
-             [callback (lambda (button event)
-                         (define initialNode (send roadInitialText get-value))
-                         (define finalNode (send roadFinalText get-value))
-                         (define weight  (send roadText get-value))
-                         (define isDirected? (send wayCheck get-value))
-                         (set! edges-list (append edges-list (list (list initialNode finalNode weight isDirected?))))
-                         (set! graph (addEdge initialNode finalNode (string->number weight) isDirected? graph))
-                         (draw-edge initialNode finalNode weight isDirected?)
-                         (send roadFrame show #f)
-                         )]))
 
+(define (city-exists? cityName)
+  (ormap (lambda (city)
+           (equal? cityName (car city)))
+         coords-list))
+
+
+; Create "Ok" button for adding a new road
+(define add-road-window-button
+  (new button%
+       [parent verticalPanelRoute]
+       [label "Añadir"]
+       [callback (lambda (button event)
+                   (define initialNode (send roadInitialText get-value))
+                   (define finalNode (send roadFinalText get-value))
+                   (define weight  (send roadText get-value))
+                   (define isDirected? (send wayCheck get-value))
+                   (if (not (city-exists? initialNode))
+                       (print "Error: La ciudad de origen no existe")
+                       (if (not (city-exists? finalNode))
+                           (print "Error: La ciudad de destino no existe")
+                           (begin
+                             (set! edges-list (append edges-list (list (list initialNode finalNode weight isDirected?))))
+                             (set! graph (addEdge initialNode finalNode (string->number weight) isDirected? graph))
+                             (draw-edge initialNode finalNode weight isDirected?)
+                             (send roadFrame show #f)
+                             )
+                           )
+                       )
+                   )]))
 
 
 ; Function to draw an edge on the canvas
@@ -350,6 +386,8 @@
   (send dc set-pen blackPen)
   (send dc set-font (make-font #:size 14 #:weight 'bold))
   (send dc draw-text node (- x 40) (- y 55))) 
+
+
 
 
 ; Function to draw a line (edge) between two nodes
@@ -411,7 +449,7 @@
 
 
 ; Create the "Find Route" frame
-(define tripFrame (new frame% [label "Find Route"]
+(define tripFrame (new frame% [label "Encontrar Route"]
                    [width popup-window-width]
                    [height popup-window-height]
                    [alignment '(center center)]
@@ -425,12 +463,12 @@
 
 ; Create text fields for specifying the route
 (define routeOrigin_entry ( new text-field% [parent verticalPanelTrip]
-                                    [label "Origin:          "]
+                                    [label "Origen:   "]
                                     [min-width 5]
                                     ))
 
 (define routeDestination_entry ( new text-field% [parent verticalPanelTrip]
-                                    [label "Destination: "]
+                                    [label "Destino: "]
                                     [min-width 5]
                                     ))
 
@@ -448,9 +486,11 @@
                                (sleep/yield 0.5)
                                (draw_all_paths paths)
                                (draw_path_aux shortestPath "green")))
-                         (send weightLabel set-label (string-append "Shortest Distance:\n" "\n" "           " (number->string (path_distance shortestPath graph))))
+                         (send weightLabel set-label (string-append "Distancia más corta(km):\n" "\n" "           " (number->string (path_distance shortestPath graph))))
                          (send tripFrame show #f)
                          )])
+
+
 
 ; Function to find the minimum weighted path
 (define (min paths pivot weight)
