@@ -22,3 +22,5 @@ Características Principales:
 
 Wazitico es una herramienta útil para planificadores de viajes, logísticos y cualquier persona que necesite calcular rutas y distancias en una red de ciudades 
 y carreteras. ¡Disfruta de una planificación de viajes más eficiente con Wazitico!
+
+En la carpeta Docs puedes encontrar el manual de usuario de la aplicacion
